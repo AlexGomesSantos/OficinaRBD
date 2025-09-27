@@ -1,0 +1,54 @@
+-- 1: Listar clientes e seus veículos
+SELECT c.nome, v.modelo, v.placa
+FROM Cliente c
+JOIN Veiculo v ON c.idCliente = v.Cliente_idCliente;
+
+-- 2: Quantas ordens de serviço cada cliente já abriu
+SELECT c.nome, COUNT(os.idOrdemServico) AS total_os
+FROM Cliente c
+LEFT JOIN OrdemServico os ON c.idCliente = os.Cliente_idCliente
+GROUP BY c.nome;
+
+-- 3: Valor total de cada OS (derivado de serviços + peças)
+SELECT os.idOrdemServico,
+       SUM(s.valor_mao_de_obra) + SUM(pe.quantidade * p.valor_unitario) AS valor_total
+FROM OrdemServico os
+LEFT JOIN Servico_Escolhido se ON os.idOrdemServico = se.OrdemServico_idOrdemServico
+LEFT JOIN Servico s ON se.Servico_idServico = s.idServico
+LEFT JOIN Peca_Especifica pe ON os.idOrdemServico = pe.OrdemServico_idOrdemServico
+LEFT JOIN Peca p ON pe.Peca_idPeca = p.idPeca
+GROUP BY os.idOrdemServico;
+
+-- 4: Clientes ordenados pelo maior valor gasto em ordens de serviço
+SELECT c.nome, SUM(os.valor_total) AS gasto_total
+FROM Cliente c
+JOIN OrdemServico os ON c.idCliente = os.Cliente_idCliente
+GROUP BY c.idCliente
+ORDER BY gasto_total DESC;
+
+-- 5: Equipes que já participaram em mais de 5 OS (HAVING)
+SELECT e.nome, COUNT(os.idOrdemServico) AS total_os
+FROM Equipe e
+JOIN OrdemServico os ON e.idEquipe = os.Equipe_idEquipe
+GROUP BY e.nome
+HAVING COUNT(os.idOrdemServico) > 5;
+
+-- 6: Quais mecânicos participam de mais de uma equipe
+SELECT m.nome, COUNT(me.Equipe_idEquipe) AS total_equipes
+FROM Mecanico m
+JOIN Mecanico_Equipe me ON m.idMecanico = me.Mecanico_idMecanico
+GROUP BY m.idMecanico
+HAVING COUNT(me.Equipe_idEquipe) > 1;
+
+-- 7: Relatório de uma OS completa
+SELECT os.idOrdemServico, c.nome AS cliente, v.modelo AS veiculo,
+       s.descricao AS servico, s.valor_mao_de_obra,
+       p.descricao AS peca, pe.quantidade, p.valor_unitario
+FROM OrdemServico os
+JOIN Cliente c ON os.Cliente_idCliente = c.idCliente
+JOIN Veiculo v ON os.Veiculo_idVeiculo = v.idVeiculo
+LEFT JOIN Servico_Escolhido se ON os.idOrdemServico = se.OrdemServico_idOrdemServico
+LEFT JOIN Servico s ON se.Servico_idServico = s.idServico
+LEFT JOIN Peca_Especifica pe ON os.idOrdemServico = pe.OrdemServico_idOrdemServico
+LEFT JOIN Peca p ON pe.Peca_idPeca = p.idPeca
+WHERE os.idOrdemServico = 1;
