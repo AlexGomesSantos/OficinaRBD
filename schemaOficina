@@ -1,0 +1,86 @@
+DROP DATABASE IF EXISTS oficina;
+CREATE DATABASE oficina;
+USE oficina;
+
+
+CREATE TABLE Cliente (
+    idCliente INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(45) NOT NULL,
+    endereco VARCHAR(45),
+    telefone VARCHAR(45)
+);
+
+CREATE TABLE Veiculo (
+    idVeiculo INT AUTO_INCREMENT PRIMARY KEY,
+    placa VARCHAR(45) UNIQUE NOT NULL,
+    marca VARCHAR(45),
+    modelo VARCHAR(45),
+    ano INT,
+    Cliente_idCliente INT NOT NULL,
+    CONSTRAINT fk_Veiculo_Cliente FOREIGN KEY (Cliente_idCliente) REFERENCES Cliente(idCliente)
+);
+
+CREATE TABLE Equipe (
+    idEquipe INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE Mecanico (
+    idMecanico INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(45) NOT NULL,
+    endereco VARCHAR(45),
+    especialidade VARCHAR(45)
+);
+
+-- Relacionamento N:N -> mecânico pode participar de várias equipes
+CREATE TABLE Mecanico_Equipe (
+    Equipe_idEquipe INT,
+    Mecanico_idMecanico INT,
+    PRIMARY KEY (Equipe_idEquipe, Mecanico_idMecanico),
+    CONSTRAINT fk_ME_Equipe FOREIGN KEY (Equipe_idEquipe) REFERENCES Equipe(idEquipe),
+    CONSTRAINT fk_ME_Mecanico FOREIGN KEY (Mecanico_idMecanico) REFERENCES Mecanico(idMecanico)
+);
+
+CREATE TABLE OrdemServico (
+    idOrdemServico INT AUTO_INCREMENT PRIMARY KEY,
+    status VARCHAR(45) NOT NULL,
+    valor_total DECIMAL(10,2),
+    observacoes VARCHAR(255),
+    Veiculo_idVeiculo INT NOT NULL,
+    Cliente_idCliente INT NOT NULL,
+    Equipe_idEquipe INT NOT NULL,
+    CONSTRAINT fk_OS_Cliente FOREIGN KEY (Cliente_idCliente) REFERENCES Cliente(idCliente),
+    CONSTRAINT fk_OS_Veiculo FOREIGN KEY (Veiculo_idVeiculo) REFERENCES Veiculo(idVeiculo),
+    CONSTRAINT fk_OS_Equipe FOREIGN KEY (Equipe_idEquipe) REFERENCES Equipe(idEquipe)
+);
+
+CREATE TABLE Servico (
+    idServico INT AUTO_INCREMENT PRIMARY KEY,
+    descricao VARCHAR(45) NOT NULL,
+    valor_mao_de_obra DECIMAL(10,2)
+);
+
+-- N:N -> serviços escolhidos em uma OS
+CREATE TABLE Servico_Escolhido (
+    OrdemServico_idOrdemServico INT,
+    Servico_idServico INT,
+    PRIMARY KEY (OrdemServico_idOrdemServico, Servico_idServico),
+    CONSTRAINT fk_SE_OS FOREIGN KEY (OrdemServico_idOrdemServico) REFERENCES OrdemServico(idOrdemServico),
+    CONSTRAINT fk_SE_Serv FOREIGN KEY (Servico_idServico) REFERENCES Servico(idServico)
+);
+
+CREATE TABLE Peca (
+    idPeca INT AUTO_INCREMENT PRIMARY KEY,
+    descricao VARCHAR(45),
+    valor_unitario DECIMAL(10,2)
+);
+
+-- N:N -> peças específicas usadas em OS
+CREATE TABLE Peca_Especifica (
+    OrdemServico_idOrdemServico INT,
+    Peca_idPeca INT,
+    quantidade INT DEFAULT 1,
+    PRIMARY KEY (OrdemServico_idOrdemServico, Peca_idPeca),
+    CONSTRAINT fk_PE_OS FOREIGN KEY (OrdemServico_idOrdemServico) REFERENCES OrdemServico(idOrdemServico),
+    CONSTRAINT fk_PE_Peca FOREIGN KEY (Peca_idPeca) REFERENCES Peca(idPeca)
+);
