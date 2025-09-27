@@ -39,5 +39,5 @@ Como executar
 
 1. Clone este repositório:
    ```bash
-   git clone https://github.com/SEU_USUARIO/oficina-database.git
-   cd oficina-database
+   https://github.com/AlexGomesSantos/OficinaRBD.git
+   cd oficinaRBD
